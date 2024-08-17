@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-
+	server.AllRooms.Init()
 	router := gin.Default()
 	router.POST("/rooms", server.CreateRoomRequestHandler)
 	router.POST("/rooms", server.JoinRoomRequestHandler)
