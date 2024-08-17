@@ -20,6 +20,31 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+type BroadcastMsg struct {
+	Message map[string]interface{}
+	RoomId  string
+	client  *websocket.Conn
+}
+
+var broadcast = make(chan BroadcastMsg)
+
+func broadcaster() {
+	for {
+		msg := <-broadcast
+
+		for _, client := range AllRooms.Map[msg.RoomId] {
+			if client.Conn != msg.client {
+				err := client.Conn.WriteJSON(msg.Message)
+
+				if err != nil {
+					log.Fatal(err)
+					client.Conn.Close()
+				}
+			}
+		}
+	}
+}
+
 func CreateRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
 	roomId := AllRooms.CreateRoom()
 
@@ -30,6 +55,7 @@ func CreateRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
 func JoinRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	roomId, ok := r.URL.Query()["roomId"]
+
 	if !ok {
 		log.Fatal("room id is missing")
 	}
@@ -39,6 +65,18 @@ func JoinRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("web socket error")
 	}
 
-	AllRooms.InsertIntoRoom(roomId, false, ws)
+	AllRooms.InsertIntoRoom(string(roomId[0]), false, ws)
+
+	go broadcaster()
+	for {
+		var msg BroadcastMsg
+		err := ws.ReadJSON(&msg.Message)
+		if err != nil {
+			log.Fatal("read error : ", err.Error())
+		}
+		msg.client = ws
+		msg.RoomId = roomId[0]
+		broadcast <- msg
+	}
 
 }

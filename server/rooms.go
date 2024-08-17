@@ -4,7 +4,7 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"golang.org/x/net/websocket"
+	"github.com/gorilla/websocket"
 )
 
 type Participant struct {
