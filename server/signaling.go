@@ -62,7 +62,7 @@ func JoinRoomRequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	ws, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Fatal("web socket error")
+		log.Fatal("web socket error ", err.Error())
 	}
 
 	AllRooms.InsertIntoRoom(string(roomId[0]), false, ws)

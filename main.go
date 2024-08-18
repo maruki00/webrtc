@@ -15,7 +15,10 @@ func main() {
 	http.HandleFunc("/join", server.JoinRoomRequestHandler)
 
 	fmt.Println("Server Started On localhost:3000")
-	log.Fatal(http.ListenAndServe(":3000", nil))
+	err := http.ListenAndServe(":3000", nil)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// router := gin.Default()
 	// http.Rou
